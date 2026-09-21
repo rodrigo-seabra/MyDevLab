@@ -1,0 +1,56 @@
+name: mydevlab
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - mydevlab_node_modules:/app/node_modules
+      - mydevlab_next:/app/.next
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      MYDEVLAB_DATABASE_URL: postgresql://${MYDEVLAB_POSTGRES_USER:-mydevlab}:${MYDEVLAB_POSTGRES_PASSWORD:-mydevlab_local_password}@postgres:5432/${MYDEVLAB_POSTGRES_DB:-mydevlab}
+    command: npm run dev -- --hostname 0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - mydevlab_internal
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${MYDEVLAB_POSTGRES_DB:-mydevlab}
+      POSTGRES_USER: ${MYDEVLAB_POSTGRES_USER:-mydevlab}
+      POSTGRES_PASSWORD: ${MYDEVLAB_POSTGRES_PASSWORD:-mydevlab_local_password}
+    volumes:
+      - mydevlab_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    networks:
+      - mydevlab_internal
+
+volumes:
+  mydevlab_node_modules:
+  mydevlab_next:
+  mydevlab_postgres_data:
+
+networks:
+  mydevlab_internal:
+    driver: bridge

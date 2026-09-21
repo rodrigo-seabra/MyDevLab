@@ -1,14 +1,15 @@
-/vendor/
+node_modules/
+.next/
+coverage/
 
-/client/*
+.env
+.env.local
+.env.*.local
+!.env.example
 
-/.env
+drizzle/meta/
 
-/.idea/
-/.vscode/
-
+.idea/
+.vscode/
 .DS_Store
 Thumbs.db
-
-/storage/logs/*
-!/storage/logs/.gitkeep

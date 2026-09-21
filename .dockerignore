@@ -1,7 +1,10 @@
-.env
 .git
-.gitignore
-vendor/
-docker-compose*.yml
+.next
+coverage
+node_modules
+.env
+.env.*
+!.env.example
+drizzle/meta
 README.md
-LICENSE
+AGENTS.md

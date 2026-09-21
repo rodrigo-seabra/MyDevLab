@@ -1,241 +1,86 @@
-## AGENTS.md
+# AGENTS.md
 
-MyDevLab is a Laravel application.
+## Projeto
 
-The current technical baseline is:
+MyDevLab e uma plataforma tecnica pessoal que combina portfolio profissional, laboratorio de engenharia de software, projetos, artigos, pesquisas e experimentos.
 
-* PHP 8.4;
-* Laravel as the application framework;
-* Apache as the web server;
-* PostgreSQL 17 as the primary database;
-* Docker Compose for local development;
-* Composer for PHP dependency management;
-* `public/` as the web document root;
-* `public/index.php` as the HTTP entry point;
-* Blade as the default server-rendered view layer;
-* Git and GitHub for version control.
+A V1 possui as rotas Home, About, Projects, Articles e Contact. O projeto deve permanecer simples, server-rendered por padrao e facil de evoluir.
 
-The application should remain primarily server-rendered unless a current requirement clearly justifies a different frontend architecture.
+Experiencias profissionais com PHP, ERPs legados, SQL Server, integracoes e sistemas criticos fazem parte do contexto editorial do projeto, mas nao fazem parte da stack de execucao do MyDevLab.
 
-Always inspect the repository before referring to application structures that have not been verified.
+## Stack atual
+
+- Next.js 16 com App Router e `output: "standalone"`;
+- React e TypeScript com `strict: true`;
+- Node.js 24 LTS dentro do Docker;
+- Tailwind CSS 4;
+- PostgreSQL 18;
+- Drizzle ORM, `pg` e `drizzle-kit`;
+- Zod para validacao;
+- ESLint, Vitest e TypeScript type checking;
+- Docker Compose para desenvolvimento.
 
 
----
-
-## Laravel architecture
-
-Laravel is the application framework for MyDevLab.
-
-Follow Laravel conventions unless the repository explicitly establishes a different convention.
-
-Prefer framework-native functionality before introducing custom abstractions or third-party packages.
-
-Use Laravel conventions for:
-
-* routing;
-* controllers;
-* request validation;
-* middleware;
-* configuration;
-* dependency resolution;
-* database migrations;
-* database transactions;
-* Blade views;
-* logging;
-* console commands;
-* automated testing.
-
-Use Composer for PHP dependencies.
-
-Use Artisan commands where appropriate.
-
-Database schema changes must use Laravel migrations unless the repository explicitly establishes another mechanism.
-
-Use Blade for server-rendered HTML.
-
-Blade's escaped output syntax should be preferred for dynamic content:
-
-```blade
-{{ $value }}
-```
-
-Only render unescaped HTML when the content is explicitly trusted and the reason is clear.
-
-Prefer Laravel validation mechanisms for request data.
-
-Prefer Eloquent or Laravel's query builder for application database access.
-
-Raw SQL is acceptable when it provides a clear technical benefit, but values must remain parameterized and the reason for bypassing the framework abstraction should be understandable.
-
----
-
-## Application structure
-
-Follow Laravel's standard directory conventions where practical.
-
-Typical responsibilities include:
+## Estrutura
 
 ```text
-app/
-    Http/
-    Models/
-
-bootstrap/
-
-config/
-
-database/
-    factories/
-    migrations/
-    seeders/
-
-public/
-
-resources/
-    css/
-    js/
-    views/
-
-routes/
-
-storage/
-
-tests/
+src/
+  app/              # rotas, layout e estilos globais
+  components/       # componentes reutilizaveis de interface
+  db/               # conexao Drizzle e schema PostgreSQL
+  lib/              # utilitarios pequenos e compartilhados
+  services/         # somente quando houver logica de aplicacao real
+  types/            # tipos compartilhados quando necessario
+  validations/      # schemas Zod
+drizzle/            # migrations versionadas
+public/             # assets estaticos
+tests/              # testes Vitest
 ```
 
-Do not create additional architectural layers merely to make the project appear more sophisticated.
+Nao crie camadas artificiais, repositorios genericos, microservices, CMS, autenticacao, filas ou outras abstracoes sem requisito concreto.
 
-Controllers should remain focused on HTTP/application orchestration.
+## Comandos
 
-Models should represent application data and related behavior where appropriate.
-
-When business logic grows beyond a reasonable controller or model responsibility, extract it into focused application classes.
-
-Do not create generic:
-
-* service layers;
-* repository layers;
-* DTO hierarchies;
-* interfaces;
-* factories;
-* domain layers;
-
-unless an actual requirement or growing complexity justifies them.
-
----
-
-## Frontend conventions
-
-MyDevLab is primarily a Laravel server-rendered application.
-
-The default frontend approach is:
-
-```text
-Blade
-CSS
-minimal JavaScript
-```
-
-Do not introduce React, Vue, Angular, Inertia, Livewire, Alpine, or another frontend framework/library solely because it may be useful later.
-
-A frontend dependency should solve a concrete current requirement.
-
-Prefer progressive enhancement over replacing server-rendered behavior with client-side application logic.
-
-Keep JavaScript scoped to interactions that genuinely require browser-side behavior.
-
-Preserve accessibility basics:
-
-* semantic HTML;
-* appropriate heading structure;
-* form labels;
-* keyboard accessibility;
-* useful alternative text;
-* visible focus states;
-* meaningful error messages.
-
----
-
-## Database conventions
-
-PostgreSQL is the source of truth for persistent application data.
-
-Use Laravel migrations for schema changes.
-
-Migrations must be reproducible and committed with the code that depends on them.
-
-Use:
-
-* primary keys;
-* foreign keys;
-* unique constraints;
-* nullability rules;
-* indexes;
-
-when they represent actual application integrity or query requirements.
-
-Avoid speculative indexes.
-
-Use Eloquent relationships when they clearly represent relationships in the data model.
-
-Use Laravel database transactions for operations that must succeed or fail atomically.
-
-Seed/demo data belongs in Laravel seeders or factories and must not contain real customer, production, or private data.
-
-Never embed database credentials in:
-
-* PHP source;
-* migrations;
-* seeders;
-* Dockerfiles;
-* committed Docker Compose configuration.
-
----
-
-## Validation expectations
-
-Choose checks proportional to the change.
-
-For PHP and Laravel changes, relevant checks may include:
+O ambiente esperado nao exige Node.js, npm ou PostgreSQL instalados localmente:
 
 ```bash
-php artisan test
-php artisan route:list
-php artisan migrate:status
+docker compose up --build
+docker compose exec app npm run db:migrate
+docker compose exec app npm run lint
+docker compose exec app npm run typecheck
+docker compose exec app npm run test
+docker compose exec app npm run build
 ```
 
-For changed standalone PHP files, `php -l` may also be used where useful.
+A aplicacao fica em `http://localhost:3000`. Para o fluxo local, o bind mount do Compose habilita hot reload dentro do container.
 
-For migration changes, validate them against the development PostgreSQL database when available.
+## Banco e isolamento
 
-For Docker changes:
+O PostgreSQL e a fonte de verdade persistente. Alteracoes de schema devem ser feitas no schema Drizzle e geradas como migrations em `drizzle/`.
 
-```bash
-docker compose config
-```
+Use exclusivamente estas variaveis especificas do projeto:
 
-and when practical:
+- `MYDEVLAB_DATABASE_URL`;
+- `MYDEVLAB_POSTGRES_DB`;
+- `MYDEVLAB_POSTGRES_USER`;
+- `MYDEVLAB_POSTGRES_PASSWORD`.
 
-```bash
-docker compose up -d --build
-docker compose ps
-```
+Nunca use `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE` ou outras variaveis genericas. O app deve conectar ao hostname Docker `postgres`, nunca a um host inferido do sistema operacional.
 
-For user-facing Laravel changes, verify the affected route or page when possible.
+Nao leia, altere, sobrescreva ou reutilize configuracoes do ambiente corporativo ESW. Nao altere variaveis de ambiente do Windows, instalacoes de PHP ou arquivos fora deste repositorio.
 
-Check:
+Credenciais reais nao podem ser commitadas. O repositorio deve conter somente valores locais seguros em `.env.example`, quando necessario.
 
-* successful rendering;
-* expected validation;
-* escaped output;
-* failure behavior;
-* basic accessibility.
+## Convencoes de implementacao
 
-Always inspect:
+- Prefira Server Components e HTML semantico; use JavaScript no cliente somente quando houver necessidade real.
+- Prefira saidas escapadas e validacao com Zod.
+- Evite `any`; mantenha o TypeScript estrito.
+- Use aliases `@/components`, `@/lib`, `@/db` e similares quando melhorarem a leitura.
+- Mantenha nomes de tabelas e colunas explicitos e migrations reproduziveis.
+- Nao esconda falhas com `|| true` ou equivalentes.
+- Preserve acessibilidade basica: labels, foco visivel, headings coerentes, mensagens de erro uteis e texto alternativo.
 
-```bash
-git diff
-git status
-```
+## Git e revisao
 
-before reporting completion.
+Nao remova `.git`, nao altere historico existente e nunca faca force push. Antes de concluir uma tarefa, verifique `git diff`, `git status` e a ausencia de segredos no diff.

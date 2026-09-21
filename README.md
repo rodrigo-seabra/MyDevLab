@@ -1,161 +1,105 @@
 # MyDevLab
 
-**MyDevLab** is my personal software engineering platform and technical laboratory.
+MyDevLab e um portfolio tecnico e laboratorio pessoal de engenharia de software. A V1 prepara as rotas Home, About, Projects, Articles e Contact, com uma base simples para projetos, artigos, pesquisas e experimentos.
 
-It is being built as a place to document real-world engineering experience, software projects, technical articles, experiments, research, engineering notes, and educational content.
+O projeto roda sem PHP, Composer, Laravel, Apache ou SQL Server. A aplicacao e executada dentro do Docker com Next.js, e o PostgreSQL fica isolado na rede interna do Compose.
 
-Rather than being only a traditional portfolio, MyDevLab aims to provide public and verifiable evidence of how I design, build, investigate, and reason about software systems.
+## Stack
 
+- Next.js 16 com App Router e TypeScript strict;
+- React 19;
+- Node.js 24 LTS no container;
+- Tailwind CSS 4;
+- PostgreSQL 18;
+- Drizzle ORM, `pg` e `drizzle-kit`;
+- Zod, ESLint e Vitest.
 
----
+## Iniciar
 
-## About the Project
+Pre-requisito: Docker Desktop com Compose.
 
-MyDevLab is designed to combine several aspects of my work as a software developer:
+```bash
+git clone <url-do-repositorio>
+cd mydevlab
+docker compose up --build
+```
 
-* professional portfolio;
-* software engineering laboratory;
-* technical knowledge base;
-* technical writing platform;
-* research and experimentation environment;
-* project showcase;
-* educational content platform.
+Abra [http://localhost:3000](http://localhost:3000). O codigo fica montado no container, com hot reload habilitado para o desenvolvimento no Windows.
 
-The project itself is also an engineering case study.
+O PostgreSQL nao publica uma porta no host. O app acessa o banco exclusivamente pelo hostname Docker `postgres` na rede interna `mydevlab_internal`.
 
-Architecture decisions, technical trade-offs, experiments, failures, improvements, and lessons learned during development will be documented whenever possible.
+## Comandos diarios
 
----
+```bash
+# iniciar em segundo plano
+docker compose up -d --build
 
-## Professional Focus
+# acompanhar logs
+docker compose logs -f app
+docker compose logs -f postgres
 
-My main areas of experience and interest include:
+# parar os containers
+docker compose down
 
-* PHP;
-* JavaScript;
-* SQL Server;
-* REST APIs;
-* system integrations;
-* ERP systems;
-* payment integrations;
-* banking integrations;
-* marketplaces;
-* webhooks;
-* OAuth;
-* asynchronous processing;
-* idempotency;
-* failure recovery;
-* legacy systems;
-* database transactions;
-* debugging;
-* software architecture.
+# rebuildar a imagem
+docker compose build --no-cache
 
-Much of my professional experience involves integrating systems and solving business-critical problems involving applications, APIs, databases, and external services.
+# rodar verificacoes dentro do container
+docker compose exec app npm run lint
+docker compose exec app npm run typecheck
+docker compose exec app npm run test
+docker compose exec app npm run build
+```
 
----
+## Banco de dados
 
-## Project Goals
+O schema inicial contempla `projects`, `articles` e `contact_messages`. As migrations ficam versionadas em `drizzle/`.
 
-The main goal of MyDevLab is to create a public body of technical work that demonstrates not only what I build, but also how I approach engineering problems.
+```bash
+# aplicar migrations no PostgreSQL do Compose
+docker compose exec app npm run db:migrate
 
-The platform will eventually contain:
+# gerar uma nova migration depois de alterar o schema
+docker compose exec app npm run db:generate -- --name descricao_da_mudanca
 
-### Projects
+# abrir o Drizzle Studio dentro do ambiente do projeto
+docker compose exec app npm run db:studio
 
-Complete software projects including context, architecture, implementation details, technical decisions, challenges, and lessons learned.
+# acessar o PostgreSQL quando necessario
+docker compose exec postgres psql -U mydevlab -d mydevlab
+```
 
-### Articles
+Os dados persistem no volume Docker `mydevlab_postgres_data`. Para remover os dados locais de forma intencional, use `docker compose down -v`.
 
-Long-form technical articles about backend development, APIs, databases, integrations, reliability, architecture, and software engineering.
+## Variaveis de ambiente
 
-### Labs
+O Compose usa somente variaveis especificas do projeto:
 
-Reproducible engineering experiments involving topics such as:
+```text
+MYDEVLAB_DATABASE_URL
+MYDEVLAB_POSTGRES_DB
+MYDEVLAB_POSTGRES_USER
+MYDEVLAB_POSTGRES_PASSWORD
+```
 
-* idempotency;
-* API retries;
-* webhooks;
-* transactions;
-* concurrency;
-* failure simulation;
-* SQL injection;
-* deadlocks;
-* external API integrations.
+Os valores padrao sao locais e seguros para desenvolvimento. Se precisar customizar, copie `.env.example` para `.env` (ignorado pelo Git) e mantenha o hostname `postgres` na URL do banco.
 
-### Engineering Notes
+Nao use `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE` ou qualquer variavel generica. O projeto nao acessa nem modifica configuracoes do ambiente corporativo ESW e nao altera variaveis do Windows.
 
-Short and practical explanations of specific engineering concepts and problems.
+## Estrutura principal
 
-### Lessons
+```text
+src/app/          # layout e rotas
+src/components/   # componentes de interface
+src/db/           # conexao e schema Drizzle
+src/validations/  # schemas Zod
+drizzle/          # migrations
+public/           # assets estaticos
+tests/            # testes Vitest
+```
 
-Structured educational content about programming, SQL, backend development, APIs, databases, and software architecture.
+Consulte [AGENTS.md](AGENTS.md) para as convencoes de implementacao, isolamento e revisao.
 
-### Case Studies
+## Privacidade e licenca
 
-Anonymized discussions of real-world engineering problems.
-
-No proprietary code, private endpoints, credentials, customer information, internal infrastructure details, or confidential company information will be published.
-
-### Research
-
-Experimental software engineering research involving implementations, datasets, metrics, and technical comparisons.
-
----
-
-## Repository Philosophy
-
-This repository is part of the project itself.
-
-It is intended to demonstrate engineering practices including:
-
-* meaningful commit history;
-* documented architectural decisions;
-* issue tracking;
-* incremental development;
-* clear project structure;
-* reproducible development environments;
-* technical documentation.
-
-The repository should reflect not only the final application, but also how the application evolved.
-
----
-
-## Privacy and Confidentiality
-
-Some of the topics discussed in MyDevLab are inspired by real-world engineering experience.
-
-However, this repository will never intentionally contain:
-
-* proprietary source code;
-* company source code;
-* customer information;
-* credentials;
-* API keys;
-* production URLs;
-* private endpoints;
-* private database schemas;
-* confidential business rules;
-* sensitive infrastructure information.
-
-Real-world cases will be generalized or anonymized before publication.
-
----
-
-## License
-
-The software source code in this repository is licensed under the **MIT License** unless otherwise stated.
-
-See the [LICENSE](LICENSE) file for details.
-
-Articles, written content, educational materials, personal information, branding, logos, and original visual assets are **not covered by the MIT License** unless explicitly stated otherwise.
-
-Copyright © Rodrigo Seabra. All rights reserved.
-
----
-
-## Author
-
-**Rodrigo Seabra**
-
-Full Stack Developer focused on PHP, JavaScript, SQL Server, APIs, system integrations, ERP systems, payments, marketplaces, and business-critical software.
-
+Nao adicione credenciais, chaves, endpoints privados, codigo proprietario, informacoes de clientes ou detalhes confidenciais ao repositorio. O codigo e licenciado sob MIT conforme [LICENSE](LICENSE); conteudo editorial e ativos originais permanecem reservados salvo indicacao explicita.
