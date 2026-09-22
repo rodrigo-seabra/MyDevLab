@@ -24,7 +24,7 @@ cd mydevlab
 docker compose up --build
 ```
 
-Abra [http://localhost:3000](http://localhost:3000). O codigo fica montado no container, com hot reload habilitado para o desenvolvimento no Windows.
+Abra [http://localhost:18080](http://localhost:18080). O codigo fica montado no container, com hot reload habilitado para o desenvolvimento no Windows.
 
 O PostgreSQL nao publica uma porta no host. O app acessa o banco exclusivamente pelo hostname Docker `postgres` na rede interna `mydevlab_internal`.
 

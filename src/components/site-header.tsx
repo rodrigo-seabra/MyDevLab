@@ -1,25 +1,21 @@
 import Link from "next/link";
-
-const navigation = [
-  ["About", "/about"],
-  ["Projects", "/projects"],
-  ["Articles", "/articles"],
-  ["Contact", "/contact"],
-] as const;
+import { BrandLogo } from "@/components/brand-logo";
+import { Container } from "@/components/container";
+import { SiteNavigation } from "@/components/site-navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader() {
   return (
-    <header className="flex flex-col gap-5 border-b border-charcoal py-6 sm:flex-row sm:items-center sm:justify-between">
-      <Link className="text-lg font-bold tracking-tight text-off-white" href="/">MyDevLab</Link>
-      <nav aria-label="Navegação principal">
-        <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-state-gray">
-          {navigation.map(([label, href]) => (
-            <li key={href}>
-              <Link className="hover:text-tech-blue" href={href}>{label}</Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <header className="border-b border-border">
+      <Container className="flex flex-col gap-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:py-6">
+        <Link aria-label="MyDevLab — página inicial" className="shrink-0" href="/">
+          <BrandLogo />
+        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <SiteNavigation />
+          <ThemeToggle />
+        </div>
+      </Container>
     </header>
   );
 }

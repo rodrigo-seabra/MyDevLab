@@ -52,7 +52,7 @@ docker compose exec app npm run test
 docker compose exec app npm run build
 ```
 
-A aplicacao fica em `http://localhost:3000`. Para o fluxo local, o bind mount do Compose habilita hot reload dentro do container.
+A aplicacao fica em `http://localhost:18080`. Para o fluxo local, o bind mount do Compose habilita hot reload dentro do container.
 
 ## Banco e isolamento
 
