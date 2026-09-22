@@ -24,6 +24,8 @@ export function ThemeToggle() {
       ? storedTheme
       : resolveSystemTheme();
 
+    // The initial value comes from browser-only preferences and must be synced after hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initialTheme);
     setHydrated(true);
 
