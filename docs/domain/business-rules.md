@@ -195,17 +195,17 @@ Para representar os fluxos descritos, os estados candidatos são:
 
 **Atenção:** estes rótulos são uma proposta conceitual para revisar os casos de uso, não uma decisão de schema. A separação final entre estado editorial e visibilidade (por exemplo, `private`/`public`) será fechada antes do DBML.
 
-## 10. Decisões necessárias antes do DBML
+## 10. Decisões de domínio consolidadas
 
-1. Fechar o catálogo de capacidades de Admin e se Admin pode gerenciar contas Author.
-2. Definir aprovação pelo próprio Admin, além do Founder, e os dados completos do registro de revisão.
-3. Definir tamanho mínimo e histórico das justificativas de rejeição.
-4. Delimitar os campos públicos e o comportamento da versão antiga durante nova aprovação.
-5. Fechar lifecycle, visibility, arquivamento e comportamento das URLs.
-6. Definir Tags e semântica/autorizações de relações de conteúdo.
-7. Definir filtros e interações mínimas do grafo V1.
-8. Escolher regras de armazenamento, limites e acesso de mídia.
-9. Definir campos do contato e controles antispam, mantendo consulta/exclusão exclusiva do Founder.
-10. Fechar provisionamento, armazenamento e rotação do segredo recovery e MFA da conta recovery.
-11. Definir regras de contas desativadas e preservação de autoria.
-12. Fechar formato editorial, slugs e requisitos de apresentação por tipo.
+As decisões previamente em aberto foram alinhadas e consolidadas no [`domain-model.md`](file:///c:/Users/Rainha/Desktop/teste/MyDevHub/docs/domain/domain-model.md):
+
+1. **Catálogo de capacidades de Admin:** Lista fechada de 7 capacidades (`review_queue.view`, `content.approve`, `content.edit_others`, `tags.manage`, `relations.manage`, `media.manage`, `content.archive`). Criação e gestão de contas é exclusiva do Founder na V1.
+2. **Segregação na aprovação:** Admins não podem aprovar conteúdo próprio. Apenas o Founder possui autoridade de auto-aprovação.
+3. **Auditoria de revisão:** Tabela imutável `review_logs` com identificador do revisor, decisão, timestamp e justificativa de rejeição obrigatória (mínimo 20 caracteres).
+4. **Campos públicos e revalidação:** Alterações em título, resumo, corpo ou imagem de item publicado retiram o conteúdo do ar imediatamente, revertendo seu estado para `pending_review`.
+5. **Ciclo de vida e arquivamento:** Itens com status `archived` retornam 404 para visitantes e ficam ocultos do grafo público.
+6. **Relações e Tags:** Relações simétricas bidirecionais com garantia de par único e rótulo opcional; tags globais e compartilhadas onde a exclusão desassocia em cascata sem afetar o conteúdo.
+7. **Regras de mídia:** Volume local Docker (`/uploads`), restrito a imagens até 5MB, servidas com validação de acesso pelo servidor.
+8. **Contato e antispam:** Formulário com nome, email, mensagem, honeypot e rate limit; mensagens armazenadas no PostgreSQL para consulta e exclusão exclusiva do Founder.
+9. **Bootstrap e Recovery:** Script operacional CLI (`npm run bootstrap`) gerando credencial inicial do Founder e hash do segredo de recuperação. Acesso da conta recovery restrito à rota `/auth/recovery`.
+10. **Desativação de contas:** Soft-delete (`is_active = false`), mantendo autoria histórica em conteúdos públicos e congelando conteúdos privados e rascunhos.

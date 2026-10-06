@@ -135,35 +135,26 @@ A V1 será considerada funcional quando:
 
 Não há prazo ou orçamento de lançamento definido neste documento. O roadmap deve ser ordenado por dependências e critérios de conclusão, e não por datas inventadas.
 
-## 7. Decisões em aberto
+## 7. Decisões de domínio consolidadas
 
-Estas perguntas precisam ser resolvidas nos casos de uso e nas regras de negócio, antes de fechar o modelo lógico e o DBML:
+As decisões essenciais de domínio foram definidas e consolidadas para guiar o modelo de dados e a implementação:
 
-- Quais permissões da lista delegável serão selecionáveis para cada Admin? A delegação de contas Author será permitida?
-- Um Admin com permissão de aprovação pode aprovar o próprio conteúdo ou deve haver separação entre autor e aprovador?
-- Além da conta aprovadora, quais dados de auditoria devem ser registrados (por exemplo, horário e versão revisada)?
-- Qual será o tamanho mínimo da justificativa de rejeição?
-- Quais campos contam como mudança da apresentação pública e reiniciam a aprovação?
-- Quais combinações de lifecycle e visibility existem? O que acontece com a visibilidade e a URL de um item arquivado?
-- Notes privadas são acessíveis somente ao Author; como fica esse acesso se a conta for desativada ou removida?
-- Quais formatos e limites de imagem/arquivo serão aceitos? O armazenamento será local no MVP ou em serviço externo? Como backups e remoção funcionarão?
-- Como Tags são nomeadas, reutilizadas e associadas aos três tipos de conteúdo?
-- Relações são direcionadas ou recíprocas? Podem ter rótulo/descrição? Podem existir relações duplicadas entre o mesmo par?
-- Quem pode criar/remover relações e como o grafo filtra conteúdo privado, pendente e arquivado?
-- Que interações a visualização do grafo precisa suportar na V1 (filtros, busca, navegação, agrupamento)?
-- Mensagens de contato não terão categorias predefinidas e permanecerão até exclusão manual pelo Founder; quais campos do formulário são obrigatórios?
-- Como serão provisionadas as credenciais iniciais das contas Founder principal e recovery sem segredos versionados? A conta recovery também terá configuração de senha/MFA no primeiro acesso?
-- Como se autentica na conta recovery e como se impede que ela seja usada como conta administrativa normal?
-- Como será gerado/definido e entregue o segredo de recuperação? Como será armazenado e atualizado com segurança?
-- Para reset de senha e troca de email do Founder principal, que confirmação, registro de auditoria e notificação são necessários?
-- Como contas internas serão convidadas, desativadas ou removidas? O que ocorre com autoria e conteúdo de uma conta desativada?
-- O conteúdo será escrito em Markdown ou outro formato? Como código, links e imagens serão renderizados com segurança?
-- O slug poderá ser alterado depois da publicação? Se puder, o que acontece com URLs antigas?
+1. **Modelagem de Conteúdo:** Tabela central `contents` com metadados compartilhados (`id`, `type`, `slug`, `title`, `summary`, `editorial_status`, `visibility`, `author_id`) e tabelas especializadas (`project_metadata`, `article_metadata`, `note_metadata`).
+2. **Ciclo Editorial & Edição Pública:** Qualquer edição em campos públicos de um item já publicado retira o conteúdo do ar imediatamente, revertendo seu estado para `pending_review` até que receba nova aprovação.
+3. **Comportamento de Arquivamento:** Itens arquivados (`archived`) são completamente ocultados da área pública e do grafo (retornando 404 para visitantes), visíveis somente no painel administrativo para consulta e restauração.
+4. **Segregação na Aprovação:** Admins aprovadores não podem aprovar conteúdo próprio (exige segregação; apenas o Founder ou outro Admin aprovador pode aprovar). Auto-aprovação é prerrogativa exclusiva do Founder.
+5. **Registro de Auditoria e Rejeição:** Tabela de auditoria imutável `review_logs` (`content_id`, `reviewer_id`, `decision`, `reason`, `timestamp`). Rejeição exige justificativa obrigatória com no mínimo 20 caracteres.
+6. **Gestão de Contas:** Centralizada exclusivamente no Founder na V1. Admins não gerenciam usuários.
+7. **Desativação de Contas:** Soft-delete (`is_active = false`). Conteúdos públicos preservam a autoria histórica; rascunhos e Notes privadas ficam congelados e inacessíveis.
+8. **Relações e Grafo:** Relações bidirecionais/simétricas (`source_id`, `target_id`, `relation_type`) com garantia de par único sem duplicatas. O grafo público exibe somente nós e arestas entre conteúdos públicos aprovados.
+9. **Taxonomia (Tags):** Tags globais e compartilhadas (`name`, `slug` único). Autores podem associar ou criar novas tags ao editar conteúdo; exclusão desassocia em cascata sem afetar o conteúdo.
+10. **Mídia e Armazenamento:** Armazenamento em volume local Docker (`/uploads`) na V1, restrito a imagens web (JPEG, PNG, WebP, SVG até 5MB), com metadados no banco e rota controlada pelo Next.js.
+11. **Formulário de Contato:** Campos nome, email e mensagem; mitigação de spam com honeypot e rate limit server-side; persistência no PostgreSQL para consulta e exclusão exclusiva do Founder (sem dependência de serviço externo de e-mail na V1).
+12. **Bootstrap e Recuperação:** Script operacional via CLI (`npm run bootstrap`) gerando token inicial único para o Founder e hash seguro do segredo de recuperação. A conta recovery é restrita exclusivamente à rota `/auth/recovery`.
 
 ## 8. Relação com os próximos documentos
 
-- `use-cases.md` detalhará os fluxos do visitante e do administrador cobertos por este escopo.
-- `business-rules.md` registrará estados, transições, validações e regras de acesso.
-- `domain-model.md` descreverá conceitos, responsabilidades, atributos candidatos e relacionamentos.
-- `model.excalidraw` apresentará visualmente o modelo conceitual revisado.
-- O DBML será produzido depois da revisão desses documentos; não é parte deste escopo inicial.
+- `use-cases.md` detalha os fluxos do visitante e do administrador.
+- `business-rules.md` registra estados, transições, validações e regras de acesso.
+- `domain-model.md` sintetiza o modelo conceitual, entidades, atributos e diagramas ER.
+- O próximo passo técnico é a transcrição do modelo de dados para o Drizzle ORM em `src/db/schema/` e a geração das migrations.
