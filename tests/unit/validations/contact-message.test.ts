@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { contactMessageSchema } from "@/validations/contact-message";
 
 describe("contactMessageSchema", () => {
-  it("accepts a valid contact message", () => {
+  it("aceita uma mensagem de contato válida", () => {
     const result = contactMessageSchema.safeParse({
       name: "Ada Lovelace",
       email: "ada@example.com",
@@ -12,7 +12,7 @@ describe("contactMessageSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects an invalid email and a short message", () => {
+  it("rejeita email inválido e mensagem muito curta", () => {
     const result = contactMessageSchema.safeParse({
       name: "A",
       email: "not-an-email",
