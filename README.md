@@ -59,6 +59,12 @@ O schema inicial contempla `projects`, `articles` e `contact_messages`. As migra
 # aplicar migrations no PostgreSQL do Compose
 docker compose exec app npm run db:migrate
 
+# inicializar/bootstrap das contas do Founder e Recovery (primeiro acesso)
+docker compose exec app npm run bootstrap
+
+# ou executar apenas o seed de contas
+docker compose exec app npm run db:seed
+
 # gerar uma nova migration depois de alterar o schema
 docker compose exec app npm run db:generate -- --name descricao_da_mudanca
 

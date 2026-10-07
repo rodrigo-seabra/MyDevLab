@@ -68,8 +68,12 @@ O ambiente esperado não exige Node.js, npm ou PostgreSQL instalados no sistema 
 # Garantir containers ativos
 docker compose up -d
 
-# Executar migrations
+# Executar migrations e bootstrap inicial de contas (Founder e Recovery)
+docker compose exec app npm run bootstrap
+# ou executar apenas migrations
 docker compose exec app npm run db:migrate
+# ou executar apenas o seed
+docker compose exec app npm run db:seed
 
 # Quality Gates (obrigatórios antes de concluir tarefas)
 docker compose exec app npm run lint
