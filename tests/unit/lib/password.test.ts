@@ -30,3 +30,4 @@ describe("password utilities", () => {
     expect(verifyPassword("password", "")).toBe(false);
   });
 });
+

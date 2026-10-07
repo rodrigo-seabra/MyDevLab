@@ -7,3 +7,4 @@ export async function logoutAction(): Promise<void> {
   await deleteSession();
   redirect("/login");
 }
+

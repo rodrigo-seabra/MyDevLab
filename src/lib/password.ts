@@ -27,3 +27,4 @@ export function verifyPassword(password: string, hash: string): boolean {
     return false;
   }
 }
+
