@@ -3,19 +3,15 @@ import { db, pool } from "./index";
 import { users, adminCapabilities, adminCapabilityEnum } from "./schema/auth";
 import { hashPassword } from "@/lib/password";
 
-const FOUNDER_EMAIL =
-  process.env.MYDEVLAB_FOUNDER_EMAIL ?? "rodrigo.seabra01@outlook.com";
-const FOUNDER_PASSWORD =
-  process.env.MYDEVLAB_FOUNDER_PASSWORD ?? "senha123456";
-const FOUNDER_NAME =
-  process.env.MYDEVLAB_FOUNDER_NAME ?? "Rodrigo Seabra";
+const FOUNDER_EMAIL = process.env.MYDEVLAB_FOUNDER_EMAIL?.trim();
+const FOUNDER_PASSWORD = process.env.MYDEVLAB_FOUNDER_PASSWORD;
+const FOUNDER_NAME = process.env.MYDEVLAB_FOUNDER_NAME?.trim() || "Founder";
 
 const RECOVERY_EMAIL =
-  process.env.MYDEVLAB_RECOVERY_EMAIL ?? "recovery@mydevlab.local";
-const RECOVERY_SECRET =
-  process.env.MYDEVLAB_RECOVERY_SECRET ?? "mydevlab-emergency-recovery-key-2026";
+  process.env.MYDEVLAB_RECOVERY_EMAIL?.trim() || "recovery@mydevlab.local";
+const RECOVERY_SECRET = process.env.MYDEVLAB_RECOVERY_SECRET?.trim();
 const RECOVERY_NAME =
-  process.env.MYDEVLAB_RECOVERY_NAME ?? "Conta Recovery Operacional";
+  process.env.MYDEVLAB_RECOVERY_NAME?.trim() || "Conta Recovery Operacional";
 
 export interface SeedResult {
   founder: {
@@ -35,6 +31,18 @@ export interface SeedResult {
 
 export async function runSeed(): Promise<SeedResult> {
   console.log("🌱 [MyDevLab Bootstrap] Iniciando seed de contas essenciais...");
+
+  if (!FOUNDER_EMAIL || !FOUNDER_PASSWORD) {
+    throw new Error(
+      "❌ [Bootstrap] Variáveis obrigatórias da conta Founder ausentes. Configure MYDEVLAB_FOUNDER_EMAIL e MYDEVLAB_FOUNDER_PASSWORD no .env."
+    );
+  }
+
+  if (!RECOVERY_SECRET) {
+    throw new Error(
+      "❌ [Bootstrap] Variável obrigatória da conta Recovery ausente. Configure MYDEVLAB_RECOVERY_SECRET no .env."
+    );
+  }
 
   // 1. Provisionar / Atualizar Conta Founder Principal (RN-006 / UC-01)
   const [existingFounder] = await db
