@@ -156,7 +156,7 @@ export async function runSeed(): Promise<SeedResult> {
   console.log(`   Status:   Ativo`);
   console.log(`🛡️  Conta Recovery (RN-006/RN-008):`);
   console.log(`   E-mail:   ${RECOVERY_EMAIL}`);
-  console.log(`   Segredo:  ${RECOVERY_SECRET}`);
+  console.log("   Segredo:  [CONFIGURADO VIA VARIÁVEL DE AMBIENTE]");
   console.log(`   Rota:     /auth/recovery`);
   console.log("=======================================================\n");
 
